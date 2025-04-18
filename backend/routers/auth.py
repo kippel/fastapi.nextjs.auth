@@ -7,7 +7,9 @@ from jose import jwt
 from dotenv import load_dotenv
 import os
 from backend.db.models import User
-from backend.deps import db_dependency, bcrypt_context
+from backend.deps import db_dependency, bcrypt_context, get_current_user_un
+
+
 
 load_dotenv()
 
@@ -27,6 +29,21 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+
+
+
+
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def create_user(db: db_dependency, create_user_request: UserCreateRequest):
+    create_user_model =User(
+        username=create_user_request.username,
+        hashed_password=bcrypt_context.hash(create_user_request.password)
+    )
+
+    db.add(create_user_model)
+    db.commit()
+
+
 def authenticate_user(username: str, password: str, db):
     user = db.query(User).filter(User.username == username).first()
     if not user:
@@ -41,15 +58,6 @@ def create_access_token(username: str, user_id: int, expires_delta: timedelta):
     encode.update({"exp": expires})
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_user(db: db_dependency, create_user_request: UserCreateRequest):
-    create_user_model =User(
-        username=create_user_request.username,
-        hashed_password=bcrypt_context.hash(create_user_request.password)
-    )
-
-    db.add(create_user_model)
-    db.commit()
 
 @router.post('/token', response_model=Token)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
@@ -60,4 +68,19 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 
     token = create_access_token(user.username, user.id, timedelta(minutes=20))
 
-    return {'access_token': token, 'token_type' : 'bearer'}
+    return {'access_token': token, 'token_type' : 'bearer', 'uuid' : user.id}
+
+
+@router.get("/verify-token/{token}")
+async def verify_user_token(token: str):
+    print("wwwwwwwwwww foo")
+    app_token = await get_current_user_un(token=token)
+    print(app_token)
+    return app_token # {"message" : "Token" }
+
+""" 
+@router.get("/api/verify-token/{token}")
+async def verify_user_token(token: str):
+    verify_token(token=token)
+    return {"message": "Token"}
+"""

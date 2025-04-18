@@ -34,6 +34,8 @@ async def get_current_user(token: oauth2_bearer_dependency):
         username: str = payload.get("sub")
         user_id: id = payload.get("id")
         if username is None or user_id is None:
+            
+
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
@@ -47,5 +49,19 @@ async def get_current_user(token: oauth2_bearer_dependency):
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+
+async def get_current_user_un(token: oauth2_bearer_dependency):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        user_id: id = payload.get("id")
+        if username is None or user_id is None:
+            return {"username": None, "id": None, "ok": False}
+
+        return {"username": username, "id": user_id, "ok" : True}
+    except JWTError:
+        return {"username": None, "id": None, "ok" : False}
+
+
 
 user_dependency = Annotated[dict, Depends(get_current_user)]

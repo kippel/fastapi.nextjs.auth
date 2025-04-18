@@ -10,3 +10,12 @@ $ pip install "fastapi[standard]" sqlalchemy python-jose bcrypt cryptography pas
 backend$ fastapi run main.py --port 4000
 
 ```
+
+```
+$ npx create-next-app@latest frontend
+
+frontend$ npm install axios
+
+frontend$ npm run dev
+
+```
