@@ -73,9 +73,9 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 
 @router.get("/verify-token/{token}")
 async def verify_user_token(token: str):
-    print("wwwwwwwwwww foo")
+    #print("wwwwwwwwwww foo")
     app_token = await get_current_user_un(token=token)
-    print(app_token)
+    #print(app_token)
     return app_token # {"message" : "Token" }
 
 """ 
